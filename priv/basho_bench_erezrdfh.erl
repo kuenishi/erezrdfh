@@ -14,14 +14,7 @@
 -define(QNAME, <<"erezrdfh_bench">>).
 
 new(_Id)->
-    %% Make sure the path is setup such that we can get at riak_client
-    case code:which(mprc) of
-        non_existing ->
-            ?FAIL_MSG("~s requires erezrdfh module to be available on code path.\n",
-                      [?MODULE]);
-        _ ->
-            ok
-    end,
+    %% Make sure the path is setup such that we can get at erl_msgpack
     try mprc:start() catch _:_ -> ok end,
 
     Server = basho_bench_config:get(msgpack_server),

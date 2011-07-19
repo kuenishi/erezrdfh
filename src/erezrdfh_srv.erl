@@ -37,15 +37,15 @@ new_queue(Name)->
     {ok,Pid}=erezrdfh_queue:start_link(b2a(Name)),
     unlink(Pid),
 %    register(b2a(Name),Pid),
-    {reply,ok}.
+    {reply,true}.
 
 del_queue(Name)->
     gen_server:call(b2a(Name), stop),
-    {reply,ok}.
+    {reply,true}.
     
 push(Name,Obj)->
     ok = gen_server:call(b2a(Name), {push,Obj}),
-    {reply,ok}.
+    {reply,true}.
 
 pop(Name)->
     case gen_server:call(b2a(Name), pop) of

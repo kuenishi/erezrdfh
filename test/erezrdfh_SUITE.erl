@@ -16,12 +16,12 @@ easy_test()->
 
     QueueName = <<"testo">>,
     {Ret,MPRC0} = mprc:call(S, new_queue, [QueueName]),
-    ?assertEqual({ok,<<"ok">>}, Ret),
+    ?assertEqual({ok, true}, Ret),
 
     Value = 2344,
     {Ret0, MPRC1} = mprc:call(MPRC0, push, [QueueName,Value]),
 
-    ?assertEqual({ok,<<"ok">>}, Ret0),
+    ?assertEqual({ok, true}, Ret0),
 
     A=2937845, B=238945029038453490, C=A+B,
     {Ret0, MPRC2} = mprc:call(MPRC1, push, [QueueName,C]),
@@ -36,7 +36,7 @@ easy_test()->
 
     push_and_pop(MPRC4, <<"adfasdfsfad">>),
 
-    {{ok,_},_} = mprc:call(S, del_queue, [QueueName]),
+    {{ok,true},_} = mprc:call(S, del_queue, [QueueName]),
 
     ok=mprc:stop(),
     ok=erezrdfh:stop().
