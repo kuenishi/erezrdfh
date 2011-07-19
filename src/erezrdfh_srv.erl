@@ -7,7 +7,7 @@
 %%%-------------------------------------------------------------------
 -module(erezrdfh_srv).
 
-
+-include_lib("eunit/include/eunit.hrl").
 %% rpc methods
 -export([status/0, new_queue/1,del_queue/1,
 	 push/2, pop/1]).
@@ -20,7 +20,6 @@
 %% API
 %%====================================================================
 init(_Argv)->
-    ?MODULE=ets:new(?MODULE,[public,named_table,set]),
     {ok, #state{}}.
 
 b2a(BinName)->erlang:binary_to_atom(BinName,latin1).
@@ -32,33 +31,27 @@ get_all_keys(Table,Key,List)->
     get_all_keys(Table,Key2,[a2b(Key)|List]).
 
 status()->
-    {reply, get_all_keys(?MODULE,ets:first(?MODULE), [])}.
+    {reply, []}. %get_all_keys(?MODULE,ets:first(?MODULE), [])}.
 
 new_queue(Name)->
-    true=ets:insert(?MODULE,{b2a(Name),queue:new()}),
+    {ok,Pid}=erezrdfh_queue:start_link(b2a(Name)),
+    unlink(Pid),
+%    register(b2a(Name),Pid),
     {reply,ok}.
 
 del_queue(Name)->
-    true=ets:delete(?MODULE,b2a(Name)),
+    gen_server:call(b2a(Name), stop),
     {reply,ok}.
     
-push(BinName,Obj)->
-    Name=b2a(BinName),
-    [{Name,Q}|_] = ets:lookup(?MODULE,Name),
-    true=ets:insert(?MODULE,{Name,queue:in(Obj,Q)}),
+push(Name,Obj)->
+    ok = gen_server:call(b2a(Name), {push,Obj}),
     {reply,ok}.
 
-pop(BinName)->
-    Name=b2a(BinName),
-    [{Name,Q}|_] = ets:lookup(?MODULE,Name),
-    case queue:out(Q) of
-	{{value,Item},Q2}->
-	    true=ets:insert(?MODULE,{Name,Q2}),
-	    {reply,Item};
-	{empty,Q} ->
-	    {reply,empty}
+pop(Name)->
+    case gen_server:call(b2a(Name), pop) of
+	{ok, V} -> {reply, V};
+	empty -> {reply, empty}
     end.
-    
 
 handle_call(_Request, _From, State)->
     Reply=ok,

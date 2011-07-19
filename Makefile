@@ -9,9 +9,9 @@ mak: all
 make: all
 
 deps:
-	@./rebar check-deps
 	@./rebar get-deps
 	@./rebar update-deps
+#	@./rebar check-deps
 
 compile: deps
 	@./rebar compile

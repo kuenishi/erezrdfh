@@ -1,6 +1,13 @@
 -module(erezrdfh_SUITE).
 
 -include_lib("eunit/include/eunit.hrl").
+push_and_pop(MPRC, V)->
+    QueueName = <<"testo">>,
+    {Ret0, MPRC2} = mprc:call(MPRC, push, [QueueName,V]),
+    {Ret1, MPRC3} = mprc:call(MPRC2, pop, [QueueName]),
+    ?assertEqual({ok,V}, Ret1),
+    MPRC3.
+    
 easy_test()->
     ok=erezrdfh:start(),
     ok=mprc:start(),
@@ -26,6 +33,8 @@ easy_test()->
     ?assertEqual({ok,C}, Ret2),
 
     {{ok,_Result},_} = mprc:call(MPRC4, status, []),
+
+    push_and_pop(MPRC4, <<"adfasdfsfad">>),
 
     {{ok,_},_} = mprc:call(S, del_queue, [QueueName]),
 

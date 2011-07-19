@@ -24,6 +24,7 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
+    erezrdfh_srv=ets:new(erezrdfh_srv,[public,named_table,set]),
     Child = {erezrdfh_process,
 	     {mprs,
 	      start_link,
