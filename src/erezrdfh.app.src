@@ -1,0 +1,13 @@
+{application, erezrdfh,
+ [
+  {description, "Message queue without AMQP butwith MessagePack"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { erezrdfh_app, []}},
+  {env, []},
+  {modules, [erezrdfh, erezrdfh_app, erezrdfh_sup]}
+ ]}.
