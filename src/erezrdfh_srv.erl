@@ -22,35 +22,33 @@
 init(_Argv)->
     {ok, #state{}}.
 
-b2a(BinName)->erlang:binary_to_atom(BinName,latin1).
-a2b(Name)->erlang:atom_to_binary(Name,latin1).
+%b2a(BinName)->erlang:binary_to_atom(BinName,latin1).
+%a2b(Name)->erlang:atom_to_binary(Name,latin1).
 
-get_all_keys(_,'$end_of_table',List)->List;
-get_all_keys(Table,Key,List)->
-    Key2=ets:next(Table,Key),
-    get_all_keys(Table,Key2,[a2b(Key)|List]).
+%% get_all_keys(_,'$end_of_table',List)->List;
+%% get_all_keys(Table,Key,List)->
+%%     Key2=ets:next(Table,Key),
+%%     get_all_keys(Table,Key2,[a2b(Key)|List]).
 
 status()->
     []. %get_all_keys(?MODULE,ets:first(?MODULE), [])}.
 
 new_queue(Name)->
-    {ok,Pid}=erezrdfh_queue:start_link(b2a(Name)),
-    unlink(Pid),
-%    register(b2a(Name),Pid),
+    ok=gen_server:call(erezrdfh_queue, {new_queue, Name}),
     true.
 
 del_queue(Name)->
-    gen_server:call(b2a(Name), stop),
+    ok=gen_server:call(erezrdfh_queue, {del_queue, Name}),
     true.
     
 push(Name,Obj)->
-    ok = gen_server:call(b2a(Name), {push,Obj}),
+    ok = gen_server:call(erezrdfh_queue, {push,Name,Obj}),
     true.
 
 pop(Name)->
-    case gen_server:call(b2a(Name), pop) of
+    case gen_server:call(erezrdfh_queue, {pop, Name}) of
 	{ok, V} -> V;
-	empty -> empty
+	{error, empty} -> <<"empty">>
     end.
 
 handle_call(_Request, _From, State)->

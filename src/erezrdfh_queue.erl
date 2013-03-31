@@ -10,7 +10,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/1]).
+-export([start_link/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -25,8 +25,9 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
-start_link(Name) when is_atom(Name) ->
-    gen_server:start_link({local, Name}, ?MODULE, [], []).
+start_link() ->
+    ?MODULE=ets:new(?MODULE,[public,named_table,set]),
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %%====================================================================
 %% gen_server callbacks
@@ -40,7 +41,7 @@ start_link(Name) when is_atom(Name) ->
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
-    {ok, queue:new()}.
+    {ok, none}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -51,16 +52,35 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call({push,V}, _, Q)->
-    {reply, ok, queue:in(V,Q)};
-handle_call(pop, _, Q)->
-    case queue:out(Q) of
-	{{value,Item},Q2}->
-	    {reply,{ok,Item}, Q2};
-	{empty,Q} ->
-	    {reply,empty, Q}
+handle_call({new_queue, Name}, _, Q) ->
+    ets:insert_new(?MODULE, {Name, queue:new()}),
+    {reply, ok, Q};
+
+handle_call({push,Name,V}, _, Q)->
+    case ets:lookup(?MODULE, Name) of
+        [{Name,E0}] ->
+            E = queue:in(V,E0),
+            ets:insert(?MODULE, {Name, E}),
+            {reply, ok, Q};
+        [] ->
+            {reply, {error, no_such_queue}, Q}
     end;
-handle_call(stop,From,Q)->
+            
+handle_call({pop, Name}, _, Q)->
+    case ets:lookup(?MODULE, Name) of
+        [{Name,E0}] ->
+            case queue:out(E0) of
+                {{value,Item},E}->
+                    ets:insert(?MODULE, {Name, E}),
+                    {reply,{ok,Item}, Q};
+                {empty,_} ->
+                    {reply,{error,empty}, Q}
+            end;
+        [] ->
+            {reply, {error, no_such_queue}, Q}
+    end;
+
+handle_call(stop,_From,Q)->
     {stop, normal, ok,Q};
 handle_call(_Request, _From, Q) ->
     Reply = ok,

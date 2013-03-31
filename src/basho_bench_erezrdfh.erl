@@ -9,8 +9,6 @@
 -module(basho_bench_erezrdfh).
 -export([new/1, run/4]).
 
-%% -include_lib("basho_bench/include/basho_bench.hrl").
-
 -define(QNAME, <<"erezrdfh_bench">>).
 
 new(_Id)->
@@ -19,23 +17,23 @@ new(_Id)->
     Port = basho_bench_config:get(msgpack_port),
 
     {ok, S} = erezrdfh_client:connect(Server, Port, []),
-%    {{ok,<<"ok">>}, _} = mprc:call(MPRC, new_queue, [?QNAME]),
+    {ok, _} = erezrdfh_client:new_queue(S, ?QNAME),
     {ok, S}.
 
 run(get, _KeyGen, _ValueGen, State)->
 %    Key = 
     S = State,
-    {ok,true} = erezrdfh_client:pop(S, ?QNAME),
+    erezrdfh_client:pop(S, ?QNAME),
     {ok, S};
 
 run(put, _KeyGen, ValueGen, State)->
 %    Key = 
     S = State,
-    {ok,true} = erezrdfh_client:push(S, ?QNAME, ValueGen()),
+    erezrdfh_client:push(S, ?QNAME, ValueGen()),
     {ok, S};
 
 run(delete, _KeyGen, ValueGen, State) ->
     S = State,
-    {ok,true} = erezrdfh_client:push(S, ?QNAME, ValueGen()),
-    {ok,true} = erezrdfh_client:pop(S, ?QNAME),
+    erezrdfh_client:push(S, ?QNAME, ValueGen()),
+    erezrdfh_client:pop(S, ?QNAME),
     {ok, S}.

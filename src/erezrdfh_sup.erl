@@ -24,8 +24,8 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    erezrdfh_srv=ets:new(erezrdfh_srv,[public,named_table,set]),
-    %% Child = {erezrdfh_process,
+    Child = ?CHILD(erezrdfh_queue, worker),
+    %%Child = {erezrdfh_process,
     %%          {msgpack_rpc_server,
     %%           start,
     %%           [erezrdfh_srv, 3, tcp, erezrdfh_srv,
@@ -33,7 +33,7 @@ init([]) ->
     %%          },
     %%          permanent, 5000, worker, [erezrdfh_srv]},
     %% ok = supervisor:check_childspecs([Child]),
-    {ok, { {one_for_one, 5, 10}, []} }.
+    {ok, { {one_for_one, 5, 10}, [Child]} }.
 
 %% -include_lib("eunit/include/eunit.hrl").
 %% easy_test()->
