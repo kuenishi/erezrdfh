@@ -1,4 +1,4 @@
-.PHONY: compile xref eunit clean doc check make deps
+.PHONY: compile xref eunit clean doc check make deps bench
 
 all: compile xref eunit
 
@@ -33,6 +33,9 @@ check:
 # @./rebar build-plt
 	@./rebar check-plt
 	@./rebar dialyze
+
+bench:
+	@../basho_bench/basho_bench erezrdfh_bench.config
 
 crosslang:
 	@echo "do ERL_LIBS=../ before you make crosslang or fail"

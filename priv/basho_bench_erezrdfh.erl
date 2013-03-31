@@ -9,35 +9,33 @@
 -module(basho_bench_erezrdfh).
 -export([new/1, run/4]).
 
--include_lib("basho_bench/include/basho_bench.hrl").
+%% -include_lib("basho_bench/include/basho_bench.hrl").
 
 -define(QNAME, <<"erezrdfh_bench">>).
 
 new(_Id)->
-    %% Make sure the path is setup such that we can get at erl_msgpack
-    try mprc:start() catch _:_ -> ok end,
 
     Server = basho_bench_config:get(msgpack_server),
     Port = basho_bench_config:get(msgpack_port),
 
-%    {ok, MPRC} = mprc:connect(Server, Port, [tcp]),
-    {ok, MPRC} = mprc:connect(Server, Port, []),
+    {ok, S} = erezrdfh_client:connect(Server, Port, []),
 %    {{ok,<<"ok">>}, _} = mprc:call(MPRC, new_queue, [?QNAME]),
-    {ok, MPRC}.
+    {ok, S}.
 
 run(get, _KeyGen, _ValueGen, State)->
 %    Key = 
-    MPRC = State,
-    {{ok,_}, MPRC2} = mprc:call(MPRC, pop, [?QNAME]),
-    {ok, MPRC2};
+    S = State,
+    {ok,true} = erezrdfh_client:pop(S, ?QNAME),
+    {ok, S};
 
 run(put, _KeyGen, ValueGen, State)->
 %    Key = 
-    MPRC = State,
-    {{ok,<<"ok">>}, MPRC2} = mprc:call(MPRC, push, [?QNAME, ValueGen()]),
-    {ok, MPRC2};
+    S = State,
+    {ok,true} = erezrdfh_client:push(S, ?QNAME, ValueGen()),
+    {ok, S};
 
 run(delete, _KeyGen, ValueGen, State) ->
-    {{ok,<<"ok">>}, MPRC} = mprc:call(State, push, [?QNAME, ValueGen()]),
-    {{ok,_}, MPRC2} = mprc:call(MPRC, pop, [?QNAME]),
-    {ok, MPRC2}.
+    S = State,
+    {ok,true} = erezrdfh_client:push(S, ?QNAME, ValueGen()),
+    {ok,true} = erezrdfh_client:pop(S, ?QNAME),
+    {ok, S}.
