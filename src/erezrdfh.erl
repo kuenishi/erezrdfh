@@ -15,7 +15,11 @@ start()->
 stop()->
     ok=application:stop(erezrdfh).
 %    halt(). % FIXME: separate from stop/0 call.
+
+
 -include_lib("eunit/include/eunit.hrl").
 easy_test()->
-    ok=erezrdfh:start(),
-    ok=erezrdfh:stop().
+    ok=application:start(ranch),
+    ok=application:start(erezrdfh),
+    ok=application:stop(erezrdfh),
+    ok=application:stop(ranch).

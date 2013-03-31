@@ -20,7 +20,7 @@ xref:
 	@./rebar xref
 
 eunit: compile
-	@./rebar eunit
+	@./rebar eunit skip_deps=true
 
 clean:
 	@./rebar clean

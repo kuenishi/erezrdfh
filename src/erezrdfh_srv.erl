@@ -31,26 +31,26 @@ get_all_keys(Table,Key,List)->
     get_all_keys(Table,Key2,[a2b(Key)|List]).
 
 status()->
-    {reply, []}. %get_all_keys(?MODULE,ets:first(?MODULE), [])}.
+    []. %get_all_keys(?MODULE,ets:first(?MODULE), [])}.
 
 new_queue(Name)->
     {ok,Pid}=erezrdfh_queue:start_link(b2a(Name)),
     unlink(Pid),
 %    register(b2a(Name),Pid),
-    {reply,true}.
+    true.
 
 del_queue(Name)->
     gen_server:call(b2a(Name), stop),
-    {reply,true}.
+    true.
     
 push(Name,Obj)->
     ok = gen_server:call(b2a(Name), {push,Obj}),
-    {reply,true}.
+    true.
 
 pop(Name)->
     case gen_server:call(b2a(Name), pop) of
-	{ok, V} -> {reply, V};
-	empty -> {reply, empty}
+	{ok, V} -> V;
+	empty -> empty
     end.
 
 handle_call(_Request, _From, State)->
