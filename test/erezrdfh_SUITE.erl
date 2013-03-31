@@ -38,3 +38,33 @@ easy_test()->
     ok=msgpack_rpc_client:close(S),
     ok=application:stop(erezrdfh),
     ok=application:stop(ranch).
+
+easy2_test()->
+    ok=application:start(ranch),
+    ok=application:start(erezrdfh),
+
+    {ok,S} = erezrdfh_client:connect(localhost,9199,[]),
+
+    QueueName = <<"testo">>,
+    Ret = erezrdfh_client:new_queue(S, QueueName),
+    ?assertEqual({ok, true}, Ret),
+
+    Value = 2344,
+    Ret0 = erezrdfh_client:push(S, QueueName,Value),
+    ?assertEqual({ok, true}, Ret0),
+
+    A=2937845, B=238945029038453490, C=A+B,
+    Ret0 = erezrdfh_client:push(S, QueueName,C),
+     Ret1 = erezrdfh_client:pop(S, QueueName),
+    ?assertEqual({ok,Value}, Ret1),
+    Ret2 = erezrdfh_client:pop(S, QueueName),
+    ?assertEqual({ok,C}, Ret2),
+ 
+    {ok,_Result} = erezrdfh_client:status(S),
+
+    push_and_pop(S, <<"adfasdfsfad">>),
+     {ok,true} = erezrdfh_client:del_queue(S, QueueName),
+ 
+    ok=erezrdfh_client:close(S),
+    ok=application:stop(erezrdfh),
+    ok=application:stop(ranch).
